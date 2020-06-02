@@ -1,0 +1,26 @@
+[[quiz]]
+name = "kthft"
+points = 10
+
+[[quiz.questions]]
+question = "What food releases the least amount of CO₂ per gram of protein?"
+
+correct = [
+    "Maize",
+]
+incorrect = [
+    "Chicken",
+    "Pork",
+    "Root vegetables",
+]
+
+[[quiz.questions]]
+question = "What food uses the least amount of land (m²/year) per gram of of protein?"
+
+correct = [
+    "Tofu",
+]
+incorrect = [
+    "Peas",
+    "Farmed fish",
+]
