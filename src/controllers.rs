@@ -1,21 +1,27 @@
 use anyhow::{anyhow, Result};
 use rand::prelude::*;
 use ring::hmac;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::Arc};
+use tokio::sync::Mutex;
 
 use crate::models::{Quiz, QuizQuestion, UserId, UserState};
 
 #[derive(Clone, Debug)]
 pub struct QuizController {
-    secret_key: hmac::Key,
-    quiz: BTreeMap<String, Quiz>,
+    secret_key: Arc<hmac::Key>,
+    quiz: Arc<BTreeMap<String, Quiz>>,
+    lock: Arc<Mutex<()>>,
 }
 
 impl QuizController {
     pub fn new<'a>(secret_key: hmac::Key, quiz: impl Iterator<Item = &'a Quiz>) -> QuizController {
         let quiz = quiz.map(|quiz| (quiz.name.clone(), quiz.clone())).collect();
 
-        QuizController { secret_key, quiz }
+        QuizController {
+            secret_key: Arc::new(secret_key),
+            quiz: Arc::new(quiz),
+            lock: Arc::new(Mutex::new(())),
+        }
     }
 
     pub fn create_user(&self) -> UserState {

@@ -54,7 +54,7 @@ enum ErrorCode {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let bind_addr = env::var("BIND").unwrap_or_else(|_err| "[::1]:3030".into());
+    let bind_addr = env::var("BIND").unwrap_or_else(|_err| "127.0.0.1:3030".into());
     let bind_addr: SocketAddr = bind_addr.parse()?;
 
     let cors_origin = env::var("CORS_ORIGIN").unwrap_or_else(|_err| "http://localhost:1313".into());

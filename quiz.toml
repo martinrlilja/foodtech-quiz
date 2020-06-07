@@ -1,3 +1,9 @@
+[[codes]]
+code = "kthft2020"
+points = 200
+valid_from = 2020-06-10T07:00:00+02:00
+valid_to = 2020-06-11T00:00:00+02:00
+
 [[quiz]]
 name = "kthft"
 points = 10
