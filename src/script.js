@@ -3,9 +3,42 @@ import htm from 'https://unpkg.com/htm?module';
 
 const html = htm.bind(h);
 
+export class Checkout {
+  constructor(quizService) {
+    this.quizService = quizService;
+  }
+
+  mount() {
+    const forms = document.querySelectorAll('.checkout-form');
+
+    for (const form of forms) {
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form_data = new FormData(form);
+        const codes = form_data.get('codes')
+          .split(' ')
+          .map((code) => code.trim())
+          .filter((code) => code.length > 0);
+        const email = form_data.get('email');
+
+        const userToken = this.quizService.getUserToken();
+        const data = await this.quizService.fetchWithUser(
+          '/checkout',
+          userToken,
+          'post',
+          { codes: codes, email: email },
+        );
+
+        form.querySelector('.checkout-form__message').textContent =
+          `You were registered with ${data.points} burgers! Good job!`;
+      });
+    }
+  }
+}
+
 export class Quiz {
-  constructor(options) {
-    this.quizService = new QuizService(options);
+  constructor(quizService) {
+    this.quizService = quizService;
   }
 
   mount(container) {
@@ -41,10 +74,9 @@ export class Quiz {
   }
 }
 
-class QuizService {
-  userTokenKey = 'foodtech.userToken';
-
+export class QuizService {
   constructor(options) {
+    this.userTokenKey = 'foodtech.userToken';
     this.url = options.url;
   }
 

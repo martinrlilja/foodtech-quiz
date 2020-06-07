@@ -1,26 +1,36 @@
 use anyhow::{anyhow, Result};
+use chrono::Utc;
+use csv;
+use hex;
 use rand::prelude::*;
 use ring::hmac;
-use std::{collections::BTreeMap, sync::Arc};
-use tokio::sync::Mutex;
+use std::{collections::BTreeMap, sync::{Arc, Mutex}, path::Path, fs::{OpenOptions, File}};
 
-use crate::models::{Quiz, QuizQuestion, UserId, UserState};
+use crate::models::{Quiz, QuizQuestion, UserId, UserState, Code, UserRecord};
 
 #[derive(Clone, Debug)]
 pub struct QuizController {
     secret_key: Arc<hmac::Key>,
+    codes: Arc<BTreeMap<String, Code>>,
     quiz: Arc<BTreeMap<String, Quiz>>,
-    lock: Arc<Mutex<()>>,
+    user_writer: UserWriter,
 }
 
 impl QuizController {
-    pub fn new<'a>(secret_key: hmac::Key, quiz: impl Iterator<Item = &'a Quiz>) -> QuizController {
+    pub fn new<'a>(
+        secret_key: hmac::Key,
+        quiz: impl Iterator<Item = &'a Quiz>,
+        codes: impl Iterator<Item = &'a Code>,
+        user_writer: UserWriter,
+    ) -> QuizController {
         let quiz = quiz.map(|quiz| (quiz.name.clone(), quiz.clone())).collect();
+        let codes = codes.map(|code| (code.code.clone(), code.clone())).collect();
 
         QuizController {
             secret_key: Arc::new(secret_key),
             quiz: Arc::new(quiz),
-            lock: Arc::new(Mutex::new(())),
+            codes: Arc::new(codes),
+            user_writer,
         }
     }
 
@@ -128,5 +138,69 @@ impl QuizController {
                 (quiz.points * correct_answers as u32) / quiz.questions.len() as u32
             })
             .sum()
+    }
+
+    pub async fn register_user(&self, codes: &[impl AsRef<str>], email: &str, user_state: &UserState) -> u32 {
+        let points = self.points(user_state);
+        let now = Utc::now();
+
+        let _entered_codes = codes.len();
+        let codes = codes.iter()
+            .filter_map(|code| self.codes.get(&code.as_ref().to_lowercase()))
+            .filter(|code| code.valid_from <= now && code.valid_to >= now)
+            .collect::<Vec<_>>();
+
+        let extra_points: u32 = codes.iter().map(|code| code.points).sum();
+        let points = points + extra_points;
+
+        if points > 0 {
+            let mut code_names = codes.iter().map(|code| code.code.clone()).collect::<Vec<_>>();
+            code_names.sort();
+            let code_names = code_names.join(" ");
+
+            let record = UserRecord {
+                id: hex::encode(&user_state.id.0),
+                email: email.into(),
+                points,
+                codes: code_names,
+            };
+
+            let user_writer = self.user_writer.clone();
+            let blocking_task = tokio::task::spawn_blocking(move || {
+                user_writer.write(record).unwrap();
+            });
+            blocking_task.await.unwrap();
+
+            points
+        } else {
+            points
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct UserWriter {
+    writer: Arc<Mutex<csv::Writer<File>>>,
+}
+
+impl UserWriter {
+    pub fn new(path: impl AsRef<Path>) -> Result<UserWriter> {
+        let file = OpenOptions::new().create(true).append(true).open(path)?;
+
+        let writer = csv::WriterBuilder::new()
+            .has_headers(false)
+            .from_writer(file);
+
+        let writer = Arc::new(Mutex::new(writer));
+
+        Ok(UserWriter { writer })
+    }
+
+    pub fn write(&self, record: UserRecord) -> Result<()> {
+        let mut writer = self.writer.lock().map_err(|_err| anyhow!("couldn't lock writer"))?;
+        writer.serialize(record)?;
+        writer.flush()?;
+
+        Ok(())
     }
 }

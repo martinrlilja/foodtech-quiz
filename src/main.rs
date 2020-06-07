@@ -5,13 +5,13 @@ use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr};
 use tokio::fs;
 use warp::{
-    http,
-    http::Response,
-    reply::{self, Reply},
     Filter,
+    http::{self, Response},
+    reject,
+    reply::{self, Reply},
 };
 
-use controllers::QuizController;
+use controllers::{QuizController, UserWriter};
 use models::{Config, UserState};
 
 mod controllers;
@@ -35,6 +35,17 @@ struct QuizAnswerReply<'a> {
     is_correct: bool,
     correct: Vec<&'a str>,
     token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct CheckoutRequest {
+    codes: Vec<String>,
+    email: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct CheckoutReply {
+    points: u32,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -81,7 +92,9 @@ async fn main() -> Result<()> {
     let config = fs::read_to_string("quiz.toml").await?;
     let config: Config = toml::de::from_str(&config)?;
 
-    let quiz_controller = QuizController::new(secret_key, config.quiz.iter());
+    let user_writer = UserWriter::new("users.csv")?;
+
+    let quiz_controller = QuizController::new(secret_key, config.quiz.iter(), config.code.iter(), user_writer);
 
     let get_quiz = warp::path!("quiz" / String)
         .and(warp::get())
@@ -176,15 +189,20 @@ async fn main() -> Result<()> {
 
     let checkout = warp::path!("checkout")
         .and(warp::post())
+        .and(warp::filters::body::json())
         .and(filters::user_state(quiz_controller.clone()))
         .and(filters::with_quiz_controller(quiz_controller.clone()))
-        .map(|user_state: UserState, quiz_controller: QuizController| {
-            let points = quiz_controller.points(&user_state);
+        .and_then(|body: CheckoutRequest, user_state: UserState, quiz_controller: QuizController| async move {
+            if !body.email.contains('@') || body.email.len() < 3 {
+                return Err(reject::not_found());
+            }
 
-            let reply = StatsReply {
-                total_points: points,
+            let points = quiz_controller.register_user(&body.codes, &body.email, &user_state).await;
+
+            let reply = CheckoutReply {
+                points,
             };
-            reply::json(&reply).into_response()
+            Ok(reply::json(&reply).into_response())
         });
 
     let script = warp::path!("static" / "script.js")
