@@ -241,18 +241,15 @@ function Popup(props) {
 export class Wheel {
   constructor(quizService) {
     this.quizService = quizService;
+
+    this.apple = document.createElement('img');
+    this.apple.src = '/images/apple.png';
+    this.apple.addEventListener('load', () => {
+      this.redrawWheels();
+    });
   }
 
   mount() {
-    const wheels = document.querySelectorAll('.wheel');
-    for (const canvas of wheels) {
-      canvas.width = 600;
-      canvas.height = 600;
-
-      const context = canvas.getContext('2d');
-      this.renderWheel(context, 0);
-    }
-
     window.addEventListener('click', async (event) => {
       const wheelName = event.target.dataset.wheelName;
       const canvas = document.querySelector('.wheel');
@@ -263,6 +260,17 @@ export class Wheel {
     });
   }
 
+  redrawWheels() {
+    const wheels = document.querySelectorAll('.wheel');
+    for (const canvas of wheels) {
+      canvas.width = 600;
+      canvas.height = 600;
+
+      const context = canvas.getContext('2d');
+      this.renderWheel(context, 0);
+    }
+  }
+
   renderWheel(context, angle) {
     const width = 600;
     const height = 600;
@@ -270,26 +278,45 @@ export class Wheel {
 
     context.lineWidth = 2;
 
+    context.translate(width / 2, height / 2);
+
     context.beginPath();
-    context.arc(width / 2, height / 2, width * 0.4, 0, 2 * Math.PI);
+    context.moveTo(-15, -height * 0.4 - 15);
+    context.lineTo(15, -height * 0.4 - 15);
+    context.lineTo(0, -height * 0.4 + 10);
+    context.fill();
+
+    context.rotate(angle);
+
+    context.beginPath();
+    context.arc(0, 0, width * 0.4, 0, 2 * Math.PI);
 
     const spokeAngles = [0, Math.PI / 3, Math.PI / 3 * 2];
     for (const spokeAngle of spokeAngles) {
-      const a = angle + spokeAngle;
-      const a2 = Math.PI - a;
+      const a = spokeAngle;
 
       context.moveTo(
-        width * 0.5 + width * 0.4 * Math.cos(a),
-        height * 0.5 + height * 0.4 * Math.sin(a)
+        width * 0.4 * Math.cos(a),
+        height * 0.4 * Math.sin(a)
       );
 
       context.lineTo(
-        width * 0.5 + width * 0.4 * Math.cos(a2),
-        height * 0.5 + height * 0.4 * Math.sin(a2)
+        -width * 0.4 * Math.cos(a),
+        -height * 0.4 * Math.sin(a)
       );
     }
 
     context.stroke();
+
+    context.drawImage(
+      this.apple,
+      -40,
+      -height * 0.4 + 20,
+      80,
+      80
+    );
+
+    context.setTransform(1, 0, 0, 1, 0, 0);
   }
 
   async spinWheel(name, canvas) {
@@ -302,10 +329,19 @@ export class Wheel {
     );
 
     if (data.error === 'NotFound') {
-      console.warn(data);
+      alert('You already spun this wheel.');
     } else {
       const context = canvas.getContext('2d');
-      this.renderSpinningWheel(context, Math.PI * 10, 0, null);
+
+      const angles = {
+        20: Math.PI / 6,
+        40: -Math.PI / 6,
+        60: 0,
+      };
+      const extraLaps = Math.round(Math.random() * 2) + 3;
+      const targetAngle = angles[data.points] + extraLaps * Math.PI * 2 - Math.PI / 2;
+
+      this.renderSpinningWheel(context, targetAngle, null);
 
       this.quizService.setUserToken(data.token);
       await this.quizService.updatePoints();
@@ -318,10 +354,31 @@ export class Wheel {
         startTimestamp = timestamp;
       }
       const delta = timestamp - startTimestamp;
+      const clampedDelta = Math.min(1, delta / 5e3);
+      const smooth = this.cubicBezier(0, 0.75, 0.95, 1, clampedDelta);
+      console.log(clampedDelta, smooth);
 
-      this.renderWheel(context, targetAngle * (delta / 1e5));
+      this.renderWheel(context, smooth * targetAngle);
 
-      this.renderSpinningWheel(context, targetAngle, startTimestamp);
+      if (clampedDelta < 1) {
+        this.renderSpinningWheel(context, targetAngle, startTimestamp);
+      }
     });
+  }
+
+  cubicBezier(p0, p1, p2, p3, x) {
+    const x1 = 1 - x;
+
+    /*
+    return 4 * Math.pow(x1, 2) * (p1 - p0)
+      + 6 * x1 * x * (p2 - p1)
+      + 3 * x1 * Math.pow(x, 2) * p2
+      + Math.pow(x, 3) * p3;
+    */
+
+    return Math.pow(x1, 3) * p0
+      + 3 * Math.pow(x1, 2) * x * p1
+      + 3 * x1 * Math.pow(x, 2) * p2
+      + Math.pow(x, 3) * p3;
   }
 }
