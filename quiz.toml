@@ -4,29 +4,138 @@ points = 200
 valid_from = "2020-06-07T07:00:00+02:00"
 valid_to = "2020-06-11T00:00:00+02:00"
 
-[[quiz]]
+[[wheel]]
 name = "kthft"
-points = 10
+points = [10, 15, 20]
+
+
+[[quiz]]
+name = "enkla"
+display = "Enklakassen"
+points = 60
 
 [[quiz.questions]]
-question = "What food releases the least amount of CO₂ per gram of protein?"
-
-correct = [
-    "Maize",
-]
-incorrect = [
-    "Chicken",
-    "Pork",
-    "Root vegetables",
-]
+question = "Which company does Enkla kassen collaborate with to ensure 100% vegan meals?"
+correct = ["Djurens rätt"]
+incorrect = ["WWF", "Djurrättsalliansen"]
 
 [[quiz.questions]]
-question = "What food uses the least amount of land (m²/year) per gram of of protein?"
+question = "Which change in your everyday life is believed to minimise your environmental footprint the most?"
+correct = ["Switching to a vegan diet"]
+incorrect = ["Decreasing flights", "Buying an electric car"]
 
-correct = [
-    "Tofu",
-]
-incorrect = [
-    "Peas",
-    "Farmed fish",
-]
+[[quiz.questions]]
+question = "How much of the grains grown in Sweden goes to human consumption?"
+correct = ["30%"]
+incorrect = ["5%", "20%"]
+
+
+[[quiz]]
+name = "hpop"
+display = "Hillpop"
+points = 60
+
+[[quiz.questions]]
+question = "How many coffee beans does it take to brew one can of Hillpop?"
+correct = ["32"]
+incorrect = ["53", "71"]
+
+[[quiz.questions]]
+question = "When do we harvest the coffee beans in Chiang Rai?"
+correct = ["December - February"]
+incorrect = ["May - July", "All year around"]
+
+[[quiz.questions]]
+question = "What country grows the most coffee in the world?"
+correct = ["Brazil"]
+incorrect = ["Vietnam", "Italy"]
+
+
+[[quiz]]
+name = "gbugs"
+display = "Global Bugs"
+points = 60
+
+[[quiz.questions]]
+question = "How many percent protein does Global Bugs cricket powder contain?"
+correct = ["70%"]
+incorrect = ["60%", "80%"]
+
+[[quiz.questions]]
+question = "About 20,000 liters of water is used to grow 1 kg of meat. How much water is needed to grow 1 kg of cricket?"
+correct = ["4 liters"]
+incorrect = ["40 liters", "200 liters"]
+
+[[quiz.questions]]
+question = "To grow 1 kg of meat, 200 m² of surface area is needed. How much cricket can be grown at 1 m² / year when you use vertical farming."
+correct = ["1000 kg"]
+incorrect = ["10 kg", "100 kg"]
+
+[[quiz.questions]]
+question = "To grow 1 kg of meat, about 10 kg of feed is consumed. How much do you need for 1 kg of cricket?"
+correct = ["2 kg"]
+incorrect = ["3 kg", "4 kg"]
+
+
+[[quiz]]
+name = "restl"
+display = "Restauranglabbet"
+points = 60
+
+[[quiz.questions]]
+question = "What is the calculated CO2 emission per meal at Restauranglabbet?"
+correct = ["0,43 CO₂/meal"]
+incorrect = ["0,76 CO₂/meal", "1,0 CO₂/meal"]
+
+
+[[quiz]]
+name = "swft"
+display = "Sweden Foodtech"
+points = 60
+
+[[quiz.questions]]
+question = "What's the name of the annual foodtech conference run by Sweden Foodtech?"
+correct = ["Big Meet"]
+incorrect = ["Foodtech Summit", "Food & Pitch"]
+
+[[quiz.questions]]
+question = "How many members are in the Foodtech Village community powered by Sweden Foodtech?"
+correct = ["More than 150"]
+incorrect = ["50", "100"]
+
+[[quiz.questions]]
+question = "What is the foodtech acceleration program that Sweden Foodtech is running together with Coop Sweden and Norrsken Foundation?"
+correct = ["Bloomer Accelerator"]
+incorrect = ["Foodtech Venture Challenge", "Future Food x Retail"]
+
+
+[[quiz]]
+name = "tbrto"
+display = "Tebrito"
+points = 60
+
+[[quiz.questions]]
+question = "What insects are used by Tebrito to create their product?"
+correct = ["Mealworms"]
+incorrect = ["Cockroach", "Cricket"]
+
+[[quiz.questions]]
+question = "The insects used by Tebrito also have another property, their poop can be used…"
+correct = ["To fertilize plants"]
+incorrect = ["In cosmetics", "Food for other animals"]
+
+[[quiz.questions]]
+question = "Entomophagy is the practice of eating bugs, how many different species of bugs are known to be consumed?"
+correct = ["2 000"]
+incorrect = ["500", "10 000"]
+
+
+#[[quiz]]
+#name = ""
+#display = ""
+#points = 60
+#
+#[[quiz.questions]]
+#question = ""
+#correct = [""]
+#incorrect = ["", ""]
