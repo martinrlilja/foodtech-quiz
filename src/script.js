@@ -3,6 +3,66 @@ import htm from 'https://unpkg.com/htm?module';
 
 const html = htm.bind(h);
 
+export class QuizService {
+  constructor(options) {
+    this.userTokenKey = 'foodtech.userToken';
+    this.url = options.url;
+
+    this.updatePoints();
+  }
+
+  setUserToken(token) {
+    if (token) {
+      window.localStorage.setItem(this.userTokenKey, token);
+    }
+  }
+
+  getUserToken() {
+    const token = window.localStorage.getItem(this.userTokenKey);
+    if (token) {
+      return `UserState ${token}`;
+    } else {
+      return null;
+    }
+  }
+
+  async fetchWithUser(url, userToken, method, body) {
+    const headers = new Headers();
+    const options = {
+      method: method || 'get',
+    };
+
+    if (userToken) {
+      headers.append('Authorization', userToken);
+    }
+
+    if (body) {
+      options.body = JSON.stringify(body);
+      headers.append('Content-Type', 'application/json');
+    }
+
+    options.headers = headers;
+
+    const response = await fetch(`${this.url}${url}`, options);
+    return await response.json();
+  }
+
+  async updatePoints() {
+    let points = 0;
+
+    const userToken = this.getUserToken();
+    if (userToken) {
+      const data = await this.fetchWithUser('/stats', userToken);
+      points = data.total_points;
+    }
+
+    const elements = document.querySelectorAll('.hamburger-count');
+    for (const element of elements) {
+      element.textContent = points;
+    }
+  }
+}
+
 export class Checkout {
   constructor(quizService) {
     this.quizService = quizService;
@@ -42,8 +102,6 @@ export class Quiz {
   }
 
   mount(container) {
-    this.updatePoints();
-
     const onClose = () => {
       render(html``, container);
     };
@@ -52,74 +110,14 @@ export class Quiz {
       const quizName = event.target.dataset.quizName;
       if (quizName) {
         const app = html`<${QuizPopup} quizName=${quizName} quizService=${this.quizService}
-                                       onUpdate=${() => this.updatePoints()} onClose=${() => onClose()} />`;
+                                       onClose=${() => onClose()} />`;
         render(app, container);
       }
     });
   }
-
-  async updatePoints() {
-    let points = 0;
-
-    const userToken = this.quizService.getUserToken();
-    if (userToken) {
-      const data = await this.quizService.fetchWithUser('/stats', userToken);
-      points = data.total_points;
-    }
-
-    const elements = document.querySelectorAll('.hamburger-count');
-    for (const element of elements) {
-      element.textContent = points;
-    }
-  }
-}
-
-export class QuizService {
-  constructor(options) {
-    this.userTokenKey = 'foodtech.userToken';
-    this.url = options.url;
-  }
-
-  setUserToken(token) {
-    console.log(token);
-    if (token) {
-      window.localStorage.setItem(this.userTokenKey, token);
-    }
-  }
-
-  getUserToken() {
-    const token = window.localStorage.getItem(this.userTokenKey);
-    if (token) {
-      return `UserState ${token}`;
-    } else {
-      return null;
-    }
-  }
-
-  async fetchWithUser(url, userToken, method, body) {
-    const headers = new Headers();
-    const options = {
-      method: method || 'get',
-    };
-
-    if (userToken) {
-      headers.append('Authorization', userToken);
-    }
-
-    if (body) {
-      options.body = JSON.stringify(body);
-      headers.append('Content-Type', 'application/json');
-    }
-
-    options.headers = headers;
-
-    const response = await fetch(`${this.url}${url}`, options);
-    return await response.json();
-  }
 }
 
 class QuizPopup extends Component {
-
   constructor() {
     super();
   }
@@ -199,7 +197,6 @@ class QuizPopup extends Component {
         { answer: this.state.selectedAnswer },
       );
 
-      console.log(data);
       this.setState(
         Object.assign(
           this.state,
@@ -208,7 +205,7 @@ class QuizPopup extends Component {
       );
 
       this.props.quizService.setUserToken(data.token);
-      this.props.onUpdate();
+      await this.props.quizService.updatePoints();
     } else {
       await this.nextQuestion();
     }
@@ -239,4 +236,92 @@ function Popup(props) {
       ${props.children}
     </div>
   </div>`;
+}
+
+export class Wheel {
+  constructor(quizService) {
+    this.quizService = quizService;
+  }
+
+  mount() {
+    const wheels = document.querySelectorAll('.wheel');
+    for (const canvas of wheels) {
+      canvas.width = 600;
+      canvas.height = 600;
+
+      const context = canvas.getContext('2d');
+      this.renderWheel(context, 0);
+    }
+
+    window.addEventListener('click', async (event) => {
+      const wheelName = event.target.dataset.wheelName;
+      const canvas = document.querySelector('.wheel');
+
+      if (wheelName) {
+        await this.spinWheel(wheelName, canvas);
+      }
+    });
+  }
+
+  renderWheel(context, angle) {
+    const width = 600;
+    const height = 600;
+    context.clearRect(0, 0, width, height);
+
+    context.lineWidth = 2;
+
+    context.beginPath();
+    context.arc(width / 2, height / 2, width * 0.4, 0, 2 * Math.PI);
+
+    const spokeAngles = [0, Math.PI / 3, Math.PI / 3 * 2];
+    for (const spokeAngle of spokeAngles) {
+      const a = angle + spokeAngle;
+      const a2 = Math.PI - a;
+
+      context.moveTo(
+        width * 0.5 + width * 0.4 * Math.cos(a),
+        height * 0.5 + height * 0.4 * Math.sin(a)
+      );
+
+      context.lineTo(
+        width * 0.5 + width * 0.4 * Math.cos(a2),
+        height * 0.5 + height * 0.4 * Math.sin(a2)
+      );
+    }
+
+    context.stroke();
+  }
+
+  async spinWheel(name, canvas) {
+    const userToken = this.quizService.getUserToken();
+    const data = await this.quizService.fetchWithUser(
+      `/wheel/${name}`,
+      userToken,
+      'post',
+      { },
+    );
+
+    if (data.error === 'NotFound') {
+      console.warn(data);
+    } else {
+      const context = canvas.getContext('2d');
+      this.renderSpinningWheel(context, Math.PI * 10, 0, null);
+
+      this.quizService.setUserToken(data.token);
+      await this.quizService.updatePoints();
+    }
+  }
+
+  renderSpinningWheel(context, targetAngle, startTimestamp) {
+    window.requestAnimationFrame((timestamp) => {
+      if (startTimestamp === null) {
+        startTimestamp = timestamp;
+      }
+      const delta = timestamp - startTimestamp;
+
+      this.renderWheel(context, targetAngle * (delta / 1e5));
+
+      this.renderSpinningWheel(context, targetAngle, startTimestamp);
+    });
+  }
 }

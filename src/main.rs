@@ -5,10 +5,10 @@ use serde::{Deserialize, Serialize};
 use std::{env, net::SocketAddr};
 use tokio::fs;
 use warp::{
-    Filter,
     http::{self, Response},
     reject,
     reply::{self, Reply},
+    Filter,
 };
 
 use controllers::{QuizController, UserWriter};
@@ -34,6 +34,12 @@ struct QuizAnswerRequest {
 struct QuizAnswerReply<'a> {
     is_correct: bool,
     correct: Vec<&'a str>,
+    token: &'a str,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct WheelSpinReply<'a> {
+    points: u32,
     token: &'a str,
 }
 
@@ -94,7 +100,13 @@ async fn main() -> Result<()> {
 
     let user_writer = UserWriter::new("users.csv")?;
 
-    let quiz_controller = QuizController::new(secret_key, config.quiz.iter(), config.code.iter(), user_writer);
+    let quiz_controller = QuizController::new(
+        secret_key,
+        config.quiz.iter(),
+        config.code.iter(),
+        config.wheel.iter(),
+        user_writer,
+    );
 
     let get_quiz = warp::path!("quiz" / String)
         .and(warp::get())
@@ -174,6 +186,36 @@ async fn main() -> Result<()> {
             },
         );
 
+    let post_wheel = warp::path!("wheel" / String)
+        .and(warp::post())
+        .and(filters::user_state(quiz_controller.clone()))
+        .and(filters::with_quiz_controller(quiz_controller.clone()))
+        .map(
+            |wheel_name: String, mut user_state: UserState, quiz_controller: QuizController| {
+                let wheel = quiz_controller.spin_wheel(&wheel_name, &mut user_state);
+
+                match wheel {
+                    None => reply::with_status(
+                        reply::json(&ErrorReply {
+                            error: ErrorCode::NotFound,
+                        }),
+                        http::StatusCode::NOT_FOUND,
+                    )
+                    .into_response(),
+                    Some(points) => {
+                        let token = quiz_controller.encode_user(&user_state).unwrap();
+
+                        let reply = WheelSpinReply {
+                            points,
+                            token: &token,
+                        };
+
+                        reply::json(&reply).into_response()
+                    }
+                }
+            },
+        );
+
     let stats = warp::path!("stats")
         .and(warp::get())
         .and(filters::user_state(quiz_controller.clone()))
@@ -184,6 +226,7 @@ async fn main() -> Result<()> {
             let reply = StatsReply {
                 total_points: points,
             };
+
             reply::json(&reply).into_response()
         });
 
@@ -194,15 +237,19 @@ async fn main() -> Result<()> {
         .and(filters::with_quiz_controller(quiz_controller.clone()))
         .and_then(|body: CheckoutRequest, user_state: UserState, quiz_controller: QuizController| async move {
             if !body.email.contains('@') || body.email.len() < 3 {
-                return Err(reject::not_found());
+                let reply = ErrorReply { error: ErrorCode::NotFound };
+
+                Ok(reply::with_status(
+                        reply::json(&reply),
+                        http::StatusCode::NOT_FOUND,
+                    ).into_response())
+            } else {
+                let points = quiz_controller.register_user(&body.codes, &body.email, &user_state).await;
+
+                let reply = CheckoutReply { points };
+
+                Ok::<_, reject::Rejection>(reply::json(&reply).into_response())
             }
-
-            let points = quiz_controller.register_user(&body.codes, &body.email, &user_state).await;
-
-            let reply = CheckoutReply {
-                points,
-            };
-            Ok(reply::json(&reply).into_response())
         });
 
     let script = warp::path!("static" / "script.js")
@@ -221,6 +268,7 @@ async fn main() -> Result<()> {
 
     let server = get_quiz
         .or(post_quiz)
+        .or(post_wheel)
         .or(stats)
         .or(checkout)
         .or(script)

@@ -4,15 +4,21 @@ use csv;
 use hex;
 use rand::prelude::*;
 use ring::hmac;
-use std::{collections::BTreeMap, sync::{Arc, Mutex}, path::Path, fs::{OpenOptions, File}};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs::{File, OpenOptions},
+    path::Path,
+    sync::{Arc, Mutex},
+};
 
-use crate::models::{Quiz, QuizQuestion, UserId, UserState, Code, UserRecord};
+use crate::models::{Code, Quiz, QuizQuestion, UserId, UserRecord, UserState, Wheel};
 
 #[derive(Clone, Debug)]
 pub struct QuizController {
     secret_key: Arc<hmac::Key>,
     codes: Arc<BTreeMap<String, Code>>,
     quiz: Arc<BTreeMap<String, Quiz>>,
+    wheel: Arc<BTreeSet<String>>,
     user_writer: UserWriter,
 }
 
@@ -21,15 +27,20 @@ impl QuizController {
         secret_key: hmac::Key,
         quiz: impl Iterator<Item = &'a Quiz>,
         codes: impl Iterator<Item = &'a Code>,
+        wheel: impl Iterator<Item = &'a Wheel>,
         user_writer: UserWriter,
     ) -> QuizController {
         let quiz = quiz.map(|quiz| (quiz.name.clone(), quiz.clone())).collect();
-        let codes = codes.map(|code| (code.code.clone(), code.clone())).collect();
+        let codes = codes
+            .map(|code| (code.code.clone(), code.clone()))
+            .collect();
+        let wheel = wheel.map(|wheel| wheel.name.clone()).collect();
 
         QuizController {
             secret_key: Arc::new(secret_key),
             quiz: Arc::new(quiz),
             codes: Arc::new(codes),
+            wheel: Arc::new(wheel),
             user_writer,
         }
     }
@@ -44,6 +55,7 @@ impl QuizController {
         UserState {
             id,
             answers: Default::default(),
+            wheels: Default::default(),
         }
     }
 
@@ -128,6 +140,23 @@ impl QuizController {
         }
     }
 
+    pub fn spin_wheel(&self, wheel: &str, user_state: &mut UserState) -> Option<u32> {
+        const CHOICES: &[(u8, u8)] = &[(20, 3), (40, 2), (60, 1)];
+
+        let wheel = self.wheel.get(wheel)?;
+        match user_state.wheels.get(wheel) {
+            None => {
+                let mut rng = thread_rng();
+                let (points, _weight) = CHOICES
+                    .choose_weighted(&mut rng, |&(_points, weight)| weight)
+                    .unwrap();
+                user_state.wheels.insert(wheel.into(), *points);
+                Some(*points as u32)
+            }
+            Some(_) => None,
+        }
+    }
+
     pub fn points(&self, user_state: &UserState) -> u32 {
         user_state
             .answers
@@ -137,15 +166,26 @@ impl QuizController {
                 let correct_answers = answers.iter().filter(|&&a| a).count();
                 (quiz.points * correct_answers as u32) / quiz.questions.len() as u32
             })
-            .sum()
+            .sum::<u32>()
+            + user_state
+                .wheels
+                .iter()
+                .map(|(_wheel_name, points)| *points as u32)
+                .sum::<u32>()
     }
 
-    pub async fn register_user(&self, codes: &[impl AsRef<str>], email: &str, user_state: &UserState) -> u32 {
+    pub async fn register_user(
+        &self,
+        codes: &[impl AsRef<str>],
+        email: &str,
+        user_state: &UserState,
+    ) -> u32 {
         let points = self.points(user_state);
         let now = Utc::now();
 
         let _entered_codes = codes.len();
-        let codes = codes.iter()
+        let codes = codes
+            .iter()
             .filter_map(|code| self.codes.get(&code.as_ref().to_lowercase()))
             .filter(|code| code.valid_from <= now && code.valid_to >= now)
             .collect::<Vec<_>>();
@@ -154,7 +194,10 @@ impl QuizController {
         let points = points + extra_points;
 
         if points > 0 {
-            let mut code_names = codes.iter().map(|code| code.code.clone()).collect::<Vec<_>>();
+            let mut code_names = codes
+                .iter()
+                .map(|code| code.code.clone())
+                .collect::<Vec<_>>();
             code_names.sort();
             let code_names = code_names.join(" ");
 
@@ -163,6 +206,7 @@ impl QuizController {
                 email: email.into(),
                 points,
                 codes: code_names,
+                time: now,
             };
 
             let user_writer = self.user_writer.clone();
@@ -197,7 +241,10 @@ impl UserWriter {
     }
 
     pub fn write(&self, record: UserRecord) -> Result<()> {
-        let mut writer = self.writer.lock().map_err(|_err| anyhow!("couldn't lock writer"))?;
+        let mut writer = self
+            .writer
+            .lock()
+            .map_err(|_err| anyhow!("couldn't lock writer"))?;
         writer.serialize(record)?;
         writer.flush()?;
 
