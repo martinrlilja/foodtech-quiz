@@ -6,6 +6,30 @@ valid_to = "2020-06-11T00:00:00+02:00"
 
 
 [[quiz]]
+name = "a2o"
+display = "A₂O"
+points = 60
+
+[[quiz.questions]]
+question = "What is our main product that is made from Swedish yellow peas?"
+correct = ["Tempeh"]
+incorrect = ["Burgers", "Tofu"]
+
+[[quiz.questions]]
+question = """
+The process of making Tempeh is actually 1000 years old and is traditionally made with soybeans.
+What is the country of origin of this process?
+"""
+correct = ["Indonesia"]
+incorrect = ["Thailand", "Malaysia"]
+
+[[quiz.questions]]
+question = "Adam Engström, the CEO and Founder of A₂O, was once a KTH student! What programme was he enrolled with?"
+correct = ["Vehicle Engineering"]
+incorrect = ["Sustainable Energy Engineering", "Civil Engineering"]
+
+
+[[quiz]]
 name = "enkla"
 display = "Enklakassen"
 points = 60
@@ -24,6 +48,53 @@ incorrect = ["Decreasing flights", "Buying an electric car"]
 question = "How much of the grains grown in Sweden goes to human consumption?"
 correct = ["30%"]
 incorrect = ["5%", "20%"]
+
+
+[[quiz]]
+name = "foodlz"
+display = "Foodloopz"
+points = 60
+
+[[quiz.questions]]
+question = "What does Foodloopz do?"
+correct = ["Working towards the vision of Zero Food Waste in the whole food industry"]
+incorrect = ["", ""]
+
+[[quiz.questions]]
+question = "What was the most memorable “loop”?"
+correct = ["The snails and the truck with water and soda"]
+incorrect = ["", ""]
+
+[[quiz.questions]]
+question = "What projects are Foodloopx engaged in right now?"
+correct = ["Goodloopz-saved coffee, Zero Waste Garden - urban farm in Solna, Re:winers, saved wine"]
+incorrect = ["", ""]
+
+
+[[quiz]]
+name = "gbugs"
+display = "Global Bugs"
+points = 80
+
+[[quiz.questions]]
+question = "How many percent protein does Global Bugs cricket powder contain?"
+correct = ["70%"]
+incorrect = ["60%", "80%"]
+
+[[quiz.questions]]
+question = "About 20,000 liters of water is used to grow 1 kg of meat. How much water is needed to grow 1 kg of cricket?"
+correct = ["4 liters"]
+incorrect = ["40 liters", "200 liters"]
+
+[[quiz.questions]]
+question = "To grow 1 kg of meat, 200 m² of surface area is needed. How much cricket can be grown at 1 m² / year when you use vertical farming."
+correct = ["1000 kg"]
+incorrect = ["10 kg", "100 kg"]
+
+[[quiz.questions]]
+question = "To grow 1 kg of meat, about 10 kg of feed is consumed. How much do you need for 1 kg of cricket?"
+correct = ["2 kg"]
+incorrect = ["3 kg", "4 kg"]
 
 
 [[quiz]]
@@ -48,29 +119,92 @@ incorrect = ["Vietnam", "Italy"]
 
 
 [[quiz]]
-name = "gbugs"
-display = "Global Bugs"
+name = "inno"
+display = "Innoscentia"
+points = 80
+
+[[quiz.questions]]
+question = "How many percent of the total meat production becomes waste on a global and annual scale?"
+correct = ["19%"]
+incorrect = ["11%", "26%"]
+
+[[quiz.questions]]
+question = "What’s the estimated value of all wasted  meat on a global and annual scale?"
+correct = ["200 billion dollar"]
+incorrect = ["100 billion dollar", "150 billion dollar"]
+
+[[quiz.questions]]
+question = "How many animals are breed, feed and slaughtered on a global and annual scale, only to become waste?"
+correct = ["12 billion"]
+incorrect = ["1 billion", "120 billion"]
+
+[[quiz.questions]]
+question = "How much bigger is the total greenhouse emissions from the wasted meat compared to the aviation industry?"
+correct = ["1,5x"]
+incorrect = ["2x", "5x"]
+
+
+[[quiz]]
+name = "klimato"
+display = "Klimato"
 points = 60
 
 [[quiz.questions]]
-question = "How many percent protein does Global Bugs cricket powder contain?"
-correct = ["70%"]
-incorrect = ["60%", "80%"]
+question = "How many tonnes of CO₂e are emitted from our global food system every year?"
+correct = ["25%"]
+incorrect = ["8%", "17%"]
 
 [[quiz.questions]]
-question = "About 20,000 liters of water is used to grow 1 kg of meat. How much water is needed to grow 1 kg of cricket?"
-correct = ["4 liters"]
-incorrect = ["40 liters", "200 liters"]
+question = "Which several stages does a food product go through on the journey from farm to fork? (measured by the LCA)"
+correct = [""]
+incorrect = ["", ""]
 
 [[quiz.questions]]
-question = "To grow 1 kg of meat, 200 m² of surface area is needed. How much cricket can be grown at 1 m² / year when you use vertical farming."
-correct = ["1000 kg"]
-incorrect = ["10 kg", "100 kg"]
+question = "What is the most effective way restaurants can reduce emission?"
+correct = [""]
+incorrect = ["", ""]
+
+
+[[quiz]]
+name = "mosa"
+display = "Mosa Meat"
+points = 60
 
 [[quiz.questions]]
-question = "To grow 1 kg of meat, about 10 kg of feed is consumed. How much do you need for 1 kg of cricket?"
-correct = ["2 kg"]
-incorrect = ["3 kg", "4 kg"]
+question = "When was their first lab grown burger displayed?"
+correct = ["2013"]
+incorrect = ["2014", "2015"]
+
+[[quiz.questions]]
+question = "From one cow sample, how many quarter pounders can be made?"
+correct = ["80 000"]
+incorrect = ["50 000", "100 000"]
+
+[[quiz.questions]]
+question = "What was the cost of their lab grown burger?"
+correct = ["€250 000"]
+incorrect = ["€100 000", "€1 000 000"]
+
+
+[[quiz]]
+name = "noquo"
+display = "Noquo Foods"
+points = 60
+
+[[quiz.questions]]
+question = "For how much of global CO2 emissions does the dairy industry stand for?"
+correct = ["4%"]
+incorrect = ["2%", "7%"]
+
+[[quiz.questions]]
+question = "One of the founders, Sorosh Tavakoli, was a KTH student! But, in what programme was he enrolled?"
+correct = ["Media Technology"]
+incorrect = ["Industrial Management", "Biotechnology"]
+
+[[quiz.questions]]
+question = "The production of 1kg of cheese if equivalent to driving a car for"
+correct = ["50 km"]
+incorrect = ["10 km", "30 km"]
 
 
 [[quiz]]
@@ -82,6 +216,19 @@ points = 60
 question = "What is the calculated CO2 emission per meal at Restauranglabbet?"
 correct = ["0,43 CO₂/meal"]
 incorrect = ["0,76 CO₂/meal", "1,0 CO₂/meal"]
+
+[[quiz.questions]]
+question = "According to Restauranglabbet, how can a sustainable and circular restaurant be achieved?"
+correct = ["Through circular economy, behavioral changes and being climate positive."]
+incorrect = [
+    "Through circular economy, behavioral changes and validated scientific methods.",
+    "Through circular economy, behavioral changes and by using UN's goals for sustainable development as guidelines.",
+]
+
+[[quiz.questions]]
+question = "Restauranglabbet opened in 2019?"
+correct = ["True"]
+incorrect = ["False"]
 
 
 [[quiz]]
@@ -103,6 +250,30 @@ incorrect = ["50", "100"]
 question = "What is the foodtech acceleration program that Sweden Foodtech is running together with Coop Sweden and Norrsken Foundation?"
 correct = ["Bloomer Accelerator"]
 incorrect = ["Foodtech Venture Challenge", "Future Food x Retail"]
+
+
+[[quiz]]
+name = "swegrn"
+display = "Swegreen"
+points = 60
+
+[[quiz.questions]]
+question = "What is the leafy greens and herb capacity of the Cityfarm in Stockholm?"
+correct = ["30 tons"]
+incorrect = ["10 tons", "20 tons"]
+
+[[quiz.questions]]
+question = """
+In order to satisfy the future city’s total food demand, scientific research projects that
+the level of production within the city border will be at.
+"""
+correct = ["10 - 15%"]
+incorrect = ["5 - 10%", "15 - 20%"]
+
+[[quiz.questions]]
+question = "Where in Stockholm is SweGreen located?"
+correct = ["Kungsholmen"]
+incorrect = ["Söder", "Östermalm"]
 
 
 [[quiz]]
@@ -139,7 +310,6 @@ incorrect = ["500", "10 000"]
 
 [[wheel]]
 name = "kthft"
-
 
 [[wheel]]
 name = "rscued"
