@@ -1,8 +1,26 @@
 [[code]]
-code = "kthft2020"
+code = "kthpan1el"
 points = 200
-valid_from = "2020-06-07T07:00:00+02:00"
-valid_to = "2020-06-11T00:00:00+02:00"
+valid_from = "2020-06-07T00:00:00+02:00"
+valid_to = "2020-06-13T00:00:00+02:00"
+
+[[code]]
+code = "kthfthkliw1"
+points = 100
+valid_from = "2020-06-07T00:00:00+02:00"
+valid_to = "2020-06-13T00:00:00+02:00"
+
+[[code]]
+code = "kthfthw2ekas"
+points = 100
+valid_from = "2020-06-07T00:00:00+02:00"
+valid_to = "2020-06-13T00:00:00+02:00"
+
+[[code]]
+code = "kthfth3winsc"
+points = 100
+valid_from = "2020-06-07T00:00:00+02:00"
+valid_to = "2020-06-13T00:00:00+02:00"
 
 
 [[quiz]]

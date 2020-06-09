@@ -241,12 +241,23 @@ function Popup(props) {
 export class Wheel {
   constructor(quizService) {
     this.quizService = quizService;
+    this.images = {};
 
-    this.apple = document.createElement('img');
-    this.apple.src = '/images/apple.png';
-    this.apple.addEventListener('load', () => {
-      this.redrawWheels();
-    });
+    const wheels = document.querySelectorAll('.wheel');
+    for (const canvas of wheels) {
+      canvas.width = 600;
+      canvas.height = 600;
+
+      const imageSource = canvas.dataset.image;
+      const image = document.createElement('img');
+      image.src = imageSource;
+      image.addEventListener('load', () => {
+        const context = canvas.getContext('2d');
+        this.renderWheel(imageSource, context, 0);
+      });
+
+      this.images[imageSource] = image;
+    }
   }
 
   mount() {
@@ -260,18 +271,7 @@ export class Wheel {
     });
   }
 
-  redrawWheels() {
-    const wheels = document.querySelectorAll('.wheel');
-    for (const canvas of wheels) {
-      canvas.width = 600;
-      canvas.height = 600;
-
-      const context = canvas.getContext('2d');
-      this.renderWheel(context, 0);
-    }
-  }
-
-  renderWheel(context, angle) {
+  renderWheel(image, context, angle) {
     const width = 600;
     const height = 600;
     context.clearRect(0, 0, width, height);
@@ -308,7 +308,29 @@ export class Wheel {
 
     context.stroke();
 
-    context.drawImage(this.apple, -40, -height * 0.4 + 20, 80, 80);
+    if (this.images[image]) {
+      context.drawImage(this.images[image], -40, -height * 0.4 + 20, 80, 80);
+    }
+
+    context.font = '32px system-ui, sans-serif';
+
+    const renderText = (text, textAngles) => {
+      const textSize = context.measureText(text);
+      for (const textAngle of textAngles) {
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.translate(width / 2, height / 2);
+        context.rotate(angle + textAngle);
+
+        context.fillText(
+          text,
+          -textSize.width / 2,
+          -height * 0.4 + 50
+        );
+      }
+    };
+
+    renderText('20', [Math.PI / 3, Math.PI, Math.PI / 3 * 5]);
+    renderText('40', [Math.PI / 3 * 2, Math.PI / 3 * 4]);
 
     context.setTransform(1, 0, 0, 1, 0, 0);
   }
@@ -339,28 +361,34 @@ export class Wheel {
       const extraLaps = Math.round(Math.random() * 2) + 3;
       const targetAngle = pointAngle + extraLaps * Math.PI * 2 + variation;
 
-      this.renderSpinningWheel(context, targetAngle, null);
+      this.renderSpinningWheel(canvas.dataset.image, context, targetAngle, null);
 
       this.quizService.setUserToken(data.token);
       await this.quizService.updatePoints();
     }
   }
 
-  renderSpinningWheel(context, targetAngle, startTimestamp) {
+  renderSpinningWheel(image, context, targetAngle, startTimestamp) {
     window.requestAnimationFrame((timestamp) => {
       if (startTimestamp === null) {
         startTimestamp = timestamp;
       }
       const delta = timestamp - startTimestamp;
       const clampedDelta = Math.min(1, delta / 5e3);
-      const smooth = this.cubicBezier(0.7, 0.95, clampedDelta);
+      //const smooth = this.cubicBezier(0.7, 0.95, clampedDelta);
+      const smooth = this.cosine(clampedDelta);
 
-      this.renderWheel(context, smooth * targetAngle);
+      this.renderWheel(image, context, smooth * targetAngle);
 
       if (clampedDelta < 1) {
-        this.renderSpinningWheel(context, targetAngle, startTimestamp);
+        this.renderSpinningWheel(image, context, targetAngle, startTimestamp);
       }
     });
+  }
+
+  cosine(t) {
+    // http://paulbourke.net/miscellaneous/interpolation/
+    return (1 - Math.cos(t * Math.PI)) / 2;
   }
 
   cubicBezier(p1, p2, t) {
