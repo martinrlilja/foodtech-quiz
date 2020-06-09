@@ -72,27 +72,94 @@ export class Checkout {
     const forms = document.querySelectorAll('.checkout-form');
 
     for (const form of forms) {
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const form_data = new FormData(form);
-        const codes = form_data.get('codes')
-          .split(' ')
-          .map((code) => code.trim())
-          .filter((code) => code.length > 0);
-        const email = form_data.get('email');
-
-        const userToken = this.quizService.getUserToken();
-        const data = await this.quizService.fetchWithUser(
-          '/checkout',
-          userToken,
-          'post',
-          { codes: codes, email: email },
-        );
-
-        form.querySelector('.checkout-form__message').textContent =
-          `You were registered with ${data.points} burgers! Good job!`;
-      });
+      render(html`<${CheckoutForm} quizService=${this.quizService} />`, form);
     }
+  }
+}
+
+class CheckoutForm extends Component {
+  constructor() {
+    super();
+
+    this.state = {
+      email: '',
+      codes: [''],
+      message: '',
+      consent: false,
+    };
+  }
+
+  onEmailInput(event) {
+    const value = event.target.value;
+    this.setState(Object.assign(this.state, { email: value }));
+  }
+
+  onCodeInput(event, index) {
+    const value = event.target.value;
+    let codes = this.state.codes.filter((code, i) => {
+        return index === i || code.length > 0;
+      });
+
+    codes[index] = value.trim().toLowerCase();
+
+    if (codes.indexOf('') === -1) {
+      codes.push('');
+    }
+
+    this.setState(Object.assign(this.state, { codes: codes }));
+  }
+
+  onConsent(event) {
+    const value = event.target.value;
+    this.setState(Object.assign(this.state, { consent: value }));
+  }
+
+  async onSubmit(event) {
+    event.preventDefault();
+
+    const userToken = this.props.quizService.getUserToken();
+    const data = await this.props.quizService.fetchWithUser(
+      '/checkout',
+      userToken,
+      'post',
+      {
+        codes: this.state.codes,
+        email: this.state.email,
+        consent: this.state.consent === 'true',
+      },
+    );
+
+    const message = `You were registered with ${data.points} burgers! Good job!`;
+    this.setState(Object.assign(this.state, { message: message }));
+  }
+
+  render(props) {
+    const codes = this.state.codes.map((code, index) => {
+      return html`
+        <input type="text" placeholder="Code"
+               value=${code} onInput=${(event) => this.onCodeInput(event, index)}
+               class="block w-64 my-2 mx-auto px-4 py-2 rounded-lg border border-gray-600 text-lg" />
+      `;
+    });
+
+    return html`<form onSubmit=${(event) => this.onSubmit(event)}>
+      <input type="email" placeholder="E-mail" required
+             value=${this.state.email} onInput=${(event) => this.onEmailInput(event)}
+             class="block w-64 my-2 mx-auto px-4 py-2 rounded-lg border border-gray-600 text-lg" />
+
+      ${codes}
+
+      <label class="flex my-2 mx-auto w-64">
+        <input type="checkbox" value=${this.state.consent} onChange=${(event) => this.onConsent(event)} />
+        <p style="margin: 0 0 0 1rem">I consent that my email can be shared with these companies. (Optional)</p>
+      </label>
+
+      <button class="block my-4 mx-auto px-6 py-4 rounded-lg border border-green-600 bg-transparent hover:bg-green-600 text-green-600 hover:text-white font-semibold text-xl text-center">
+        Checkout
+      </button>
+
+      <p class="text-lg text-center font-semibold">${this.state.message}</p>
+    </div>`;
   }
 }
 

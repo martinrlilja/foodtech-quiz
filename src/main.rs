@@ -47,6 +47,7 @@ struct WheelSpinReply<'a> {
 struct CheckoutRequest {
     codes: Vec<String>,
     email: String,
+    consent: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -244,7 +245,7 @@ async fn main() -> Result<()> {
                         http::StatusCode::NOT_FOUND,
                     ).into_response())
             } else {
-                let points = quiz_controller.register_user(&body.codes, &body.email, &user_state).await;
+                let points = quiz_controller.register_user(&body.codes, &body.email, body.consent, &user_state).await;
 
                 let reply = CheckoutReply { points };
 

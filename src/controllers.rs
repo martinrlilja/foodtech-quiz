@@ -178,15 +178,16 @@ impl QuizController {
         &self,
         codes: &[impl AsRef<str>],
         email: &str,
+        consent: bool,
         user_state: &UserState,
     ) -> u32 {
         let points = self.points(user_state);
         let now = Utc::now();
 
-        let _entered_codes = codes.len();
+        let codes = codes.into_iter().map(|code| code.as_ref()).collect::<BTreeSet<_>>();
         let codes = codes
             .iter()
-            .filter_map(|code| self.codes.get(&code.as_ref().to_lowercase()))
+            .filter_map(|code| self.codes.get(&code.trim().to_lowercase()))
             .filter(|code| code.valid_from <= now && code.valid_to >= now)
             .collect::<Vec<_>>();
 
@@ -206,6 +207,7 @@ impl QuizController {
                 email: email.into(),
                 points,
                 codes: code_names,
+                consent,
                 time: now,
             };
 

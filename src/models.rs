@@ -57,5 +57,6 @@ pub struct UserRecord {
     pub email: String,
     pub points: u32,
     pub codes: String,
+    pub consent: bool,
     pub time: DateTime<Utc>,
 }
