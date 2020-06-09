@@ -328,12 +328,16 @@ export class Wheel {
       const context = canvas.getContext('2d');
 
       const angles = {
-        20: Math.PI / 3,
-        40: -Math.PI / 3 * 2,
-        60: 0,
+        20: [Math.PI / 3, Math.PI, Math.PI / 3 * 5],
+        40: [Math.PI / 3 * 2, Math.PI / 3 * 4],
+        60: [0],
       };
+      const pointAngles = angles[data.points];
+      const pointAngle = pointAngles[Math.floor(Math.random() * pointAngles.length)];
+      const variation = Math.random() * Math.PI / 3.1 - Math.PI / 6.2;
+
       const extraLaps = Math.round(Math.random() * 2) + 3;
-      const targetAngle = angles[data.points] + extraLaps * Math.PI * 2;
+      const targetAngle = pointAngle + extraLaps * Math.PI * 2 + variation;
 
       this.renderSpinningWheel(context, targetAngle, null);
 
@@ -349,7 +353,7 @@ export class Wheel {
       }
       const delta = timestamp - startTimestamp;
       const clampedDelta = Math.min(1, delta / 5e3);
-      const smooth = this.cubicBezier(0.75, 0.95, clampedDelta);
+      const smooth = this.cubicBezier(0.7, 0.95, clampedDelta);
 
       this.renderWheel(context, smooth * targetAngle);
 
