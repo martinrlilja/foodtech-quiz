@@ -442,8 +442,7 @@ export class Wheel {
       }
       const delta = timestamp - startTimestamp;
       const clampedDelta = Math.min(1, delta / 5e3);
-      //const smooth = this.cubicBezier(0.7, 0.95, clampedDelta);
-      const smooth = this.cosine(clampedDelta);
+      const smooth = this.cosine(clampedDelta / 2 + 0.5) * 2 - 1;
 
       this.renderWheel(image, context, smooth * targetAngle);
 
@@ -456,11 +455,5 @@ export class Wheel {
   cosine(t) {
     // http://paulbourke.net/miscellaneous/interpolation/
     return (1 - Math.cos(t * Math.PI)) / 2;
-  }
-
-  cubicBezier(p1, p2, t) {
-    return 3 * Math.pow(1 - t, 2) * t * p1
-      + 3 * (1 - t) * Math.pow(t, 2) * p2
-      + Math.pow(t, 3);
   }
 }
