@@ -5,7 +5,7 @@ const html = htm.bind(h);
 
 export class QuizService {
   constructor(options) {
-    this.userTokenKey = 'foodtech.userToken';
+    this.userTokenKey = 'foodtech.userToken.v2';
     this.url = options.url;
 
     this.updatePoints();
@@ -308,13 +308,7 @@ export class Wheel {
 
     context.stroke();
 
-    context.drawImage(
-      this.apple,
-      -40,
-      -height * 0.4 + 20,
-      80,
-      80
-    );
+    context.drawImage(this.apple, -40, -height * 0.4 + 20, 80, 80);
 
     context.setTransform(1, 0, 0, 1, 0, 0);
   }
@@ -334,12 +328,12 @@ export class Wheel {
       const context = canvas.getContext('2d');
 
       const angles = {
-        20: Math.PI / 6,
-        40: -Math.PI / 6,
+        20: Math.PI / 3,
+        40: -Math.PI / 3 * 2,
         60: 0,
       };
       const extraLaps = Math.round(Math.random() * 2) + 3;
-      const targetAngle = angles[data.points] + extraLaps * Math.PI * 2 - Math.PI / 2;
+      const targetAngle = angles[data.points] + extraLaps * Math.PI * 2;
 
       this.renderSpinningWheel(context, targetAngle, null);
 
@@ -355,8 +349,7 @@ export class Wheel {
       }
       const delta = timestamp - startTimestamp;
       const clampedDelta = Math.min(1, delta / 5e3);
-      const smooth = this.cubicBezier(0, 0.75, 0.95, 1, clampedDelta);
-      console.log(clampedDelta, smooth);
+      const smooth = this.cubicBezier(0.75, 0.95, clampedDelta);
 
       this.renderWheel(context, smooth * targetAngle);
 
@@ -366,19 +359,9 @@ export class Wheel {
     });
   }
 
-  cubicBezier(p0, p1, p2, p3, x) {
-    const x1 = 1 - x;
-
-    /*
-    return 4 * Math.pow(x1, 2) * (p1 - p0)
-      + 6 * x1 * x * (p2 - p1)
-      + 3 * x1 * Math.pow(x, 2) * p2
-      + Math.pow(x, 3) * p3;
-    */
-
-    return Math.pow(x1, 3) * p0
-      + 3 * Math.pow(x1, 2) * x * p1
-      + 3 * x1 * Math.pow(x, 2) * p2
-      + Math.pow(x, 3) * p3;
+  cubicBezier(p1, p2, t) {
+    return 3 * Math.pow(1 - t, 2) * t * p1
+      + 3 * (1 - t) * Math.pow(t, 2) * p2
+      + Math.pow(t, 3);
   }
 }
