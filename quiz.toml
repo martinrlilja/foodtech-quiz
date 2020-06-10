@@ -318,6 +318,30 @@ correct = ["2 000"]
 incorrect = ["500", "10 000"]
 
 
+[[quiz]]
+name = "verdan"
+display = "Verdantips"
+points = 60
+
+[[quiz.questions]]
+question = "With Verdantips,"
+correct = ["Sustainability is at you reach"]
+incorrect = ["Sustainability is at your doorstep", "Sustainability is at your horizon"]
+
+[[quiz.questions]]
+question = "What problem does Verdantips try to tackle?"
+correct = ["Both"]
+incorrect = [
+    "Diners struggling to find restaurants in their vicinity that matches their sustainability value.",
+    "Restaurants struggling to showcase their sustainability practices easily and effectively.",
+]
+
+[[quiz.questions]]
+question = "As per Verdantips, sustainability in the dinning entails:"
+correct = ["Vegan, vegetarian food options, sustainably acquired meat, water use management, waste management, energy efficiency, renewable energy and much more."]
+incorrect = ["Vegan friendly food options only.", "Organic food options only."]
+
+
 #[[quiz]]
 #name = ""
 #display = ""
