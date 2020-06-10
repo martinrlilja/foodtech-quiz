@@ -75,9 +75,9 @@ points = 60
 
 [[quiz.questions]]
 question = "What does Foodloopz do?"
-correct = ["Working towards the vision of Zero Food Waste in the whole food industry."]
+correct = ["Work as consultants with the vision of Zero Food Waste in the food industry."]
 incorrect = [
-    "Working towards the vision of Zero Food Waste in the drinks industry.",
+    "Digital marketplace for food waste B2B.",
     "Working towards the vision of Zero Food Waste in the farming industry.",
 ]
 
