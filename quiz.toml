@@ -169,18 +169,21 @@ points = 60
 
 [[quiz.questions]]
 question = "How many tonnes of CO₂e are emitted from our global food system every year?"
-correct = ["25%"]
-incorrect = ["8%", "17%"]
+correct = ["14 billion metric tonnes"]
+incorrect = ["6 billion metric tonnes", "224 billion metric tons"]
 
 [[quiz.questions]]
 question = "Which several stages does a food product go through on the journey from farm to fork? (measured by the LCA)"
-correct = [""]
-incorrect = ["", ""]
+correct = ["Raw material extraction, farming, factory processing, and transportation."]
+incorrect = [
+    "Farming, transportation, storage, consumer distribution.",
+    "Raw material extraction, farming, factory processing, transportation, shelf-storage.",
+]
 
 [[quiz.questions]]
 question = "What is the most effective way restaurants can reduce emission?"
-correct = [""]
-incorrect = ["", ""]
+correct = ["Switching to plant-based food products."]
+incorrect = ["Use only organic ingredients.", "Turn off the stoves when not using them."]
 
 
 [[quiz]]
