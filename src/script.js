@@ -5,7 +5,7 @@ const html = htm.bind(h);
 
 export class QuizService {
   constructor(options) {
-    this.userTokenKey = 'foodtech.userToken.v2';
+    this.userTokenKey = 'foodtech.userToken.v3';
     this.url = options.url;
 
     this.updatePoints();
