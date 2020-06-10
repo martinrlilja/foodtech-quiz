@@ -75,18 +75,21 @@ points = 60
 
 [[quiz.questions]]
 question = "What does Foodloopz do?"
-correct = ["Working towards the vision of Zero Food Waste in the whole food industry"]
-incorrect = ["", ""]
+correct = ["Working towards the vision of Zero Food Waste in the whole food industry."]
+incorrect = [
+    "Working towards the vision of Zero Food Waste in the drinks industry.",
+    "Working towards the vision of Zero Food Waste in the farming industry.",
+]
 
 [[quiz.questions]]
-question = "What was the most memorable “loop”?"
-correct = ["The snails and the truck with water and soda"]
-incorrect = ["", ""]
+question = "What kind of food waste events does Foodloopz do?"
+correct = ["Both"]
+incorrect = ["Svinnfika - A memorable fika for workplaces", "Matsvinnstorg - A popup shop for food waste"]
 
 [[quiz.questions]]
 question = "What projects are Foodloopx engaged in right now?"
-correct = ["Goodloopz-saved coffee, Zero Waste Garden - urban farm in Solna, Re:winers, saved wine"]
-incorrect = ["", ""]
+correct = ["Goodloopz - rescued coffee, Zero Waste Garden - urban farm in Solna, Re:winers - rescued wine."]
+incorrect = ["Nothing, because of Corona.", "Rescued fish project in Norway."]
 
 
 [[quiz]]
