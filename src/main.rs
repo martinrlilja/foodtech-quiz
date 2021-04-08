@@ -260,7 +260,8 @@ async fn main() -> Result<()> {
             Response::builder()
                 .header("Content-Type", "application/javascript")
                 .body(SCRIPT)
-        });
+        })
+        .with(warp::compression::gzip());
 
     let cors = warp::cors()
         .allow_origin(cors_origin.as_str())
